@@ -1,3 +1,15 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+staticfiles/
+media/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
