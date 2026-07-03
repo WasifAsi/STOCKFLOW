@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Products | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>Products</h3>
+      <form method="get" class="search-bar">
+        <input type="search" name="q" value="{{ query }}" placeholder="Search SKU, name, or category">
+        <button type="submit">Search</button>
+      </form>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Supplier</th>
+            <th>Unit</th>
+            <th>Reorder point</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+            <tr>
+              <td>{{ product.sku }}</td>
+              <td>{{ product.name }}</td>
+              <td>{{ product.category.name }}</td>
+              <td>{{ product.supplier.name|default:"-" }}</td>
+              <td>{{ product.unit }}</td>
+              <td>{{ product.reorder_point }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6">No products found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

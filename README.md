@@ -19,47 +19,65 @@ StockFlow is a self-hosted, self-contained inventory control system designed for
 
 ```
 STOCKFLOW/
-├── manage.py                # Django project launcher
-├── requirements.txt         # Python dependencies
-├── db.sqlite3              # Local database (auto-created)
+├── run.bat                 # Windows launcher (double-click to start)
+├── run.py                  # macOS/Linux launcher (python run.py)
+├── manage.py               # Django project launcher
+├── requirements.txt        # Python dependencies (Django)
+├── README.md               # This file
+├── LICENSE                 # MIT License
+├── db.sqlite3              # Local database (auto-created after first run)
+├── venv/                   # Virtual environment (auto-created by launchers)
 ├── stockflow/              # Main Django configuration
+│   ├── __init__.py         # Package marker
 │   ├── settings.py         # Settings and app registration
 │   ├── urls.py             # URL routing
 │   ├── wsgi.py             # WSGI application
 │   └── asgi.py             # ASGI application
-├── apps/
+├── apps/                   # Django applications
 │   ├── accounts/           # User authentication and roles
-│   │   ├── models.py       # Custom User model with Role field
+│   │   ├── __init__.py
+│   │   ├── models.py       # Custom User model with Role field (ADMIN/MANAGER/STAFF/VIEWER)
 │   │   ├── views.py        # Login/logout views
 │   │   ├── admin.py        # User admin interface
-│   │   └── urls.py         # Auth URLs
+│   │   ├── urls.py         # Authentication URLs
+│   │   └── migrations/     # Database migration files
 │   └── inventory/          # Core inventory app
-│       ├── models.py       # Warehouse, Product, StockLevel, StockTransfer, StockMovement
-│       ├── views.py        # Dashboard, product list, warehouse list, transfers
+│       ├── __init__.py
+│       ├── models.py       # Warehouse, Product, Category, Supplier, StockLevel, StockTransfer, StockMovement
+│       ├── views.py        # Dashboard, product list, warehouse list, transfer list
 │       ├── admin.py        # Model admin interfaces
-│       └── urls.py         # Inventory URLs
+│       ├── urls.py         # Inventory URLs
+│       └── migrations/     # Database migration files
 ├── templates/              # HTML templates
 │   ├── base.html           # Base layout template
-│   ├── registration/       # Login template
-│   └── inventory/          # Dashboard, product, warehouse, transfer templates
-└── static/
+│   ├── registration/       # Login/logout templates
+│   │   └── login.html      # Login page
+│   └── inventory/          # Dashboard and inventory templates
+│       ├── dashboard.html  # Main dashboard with metrics and alerts
+│       ├── product_list.html
+│       ├── warehouse_list.html
+│       └── transfer_list.html
+└── static/                 # Static files (CSS, images, JavaScript)
     └── css/
-        └── app.css         # Global stylesheet
+        └── app.css         # Global stylesheet with responsive design
 ```
 
 ## Quick Launch
 
-### For Windows (Easiest)
-1. Open File Explorer and navigate to the STOCKFLOW folder
-2. **Double-click `run.bat`** — This automatically handles everything:
-   - Creates a virtual environment
-   - Installs dependencies
-   - Sets up the database
-   - Creates an admin user (if needed)
-   - Opens the dashboard in your browser
+### Windows Users
+**Easiest way:** Open File Explorer, navigate to the STOCKFLOW folder, and **double-click `run.bat`**.
 
-### For macOS / Linux
-1. Open Terminal and navigate to the STOCKFLOW folder:
+The batch file automatically:
+- ✓ Detects Python installation
+- ✓ Creates a virtual environment (first run only)
+- ✓ Installs Django and dependencies
+- ✓ Applies database migrations
+- ✓ Creates an admin account (prompts only on first run)
+- ✓ Opens http://127.0.0.1:8000 in your browser
+- ✓ Starts the development server
+
+### macOS / Linux Users
+1. Open Terminal and navigate to the folder:
    ```bash
    cd path/to/STOCKFLOW
    ```
@@ -67,6 +85,17 @@ STOCKFLOW/
    ```bash
    python run.py
    ```
+
+The Python script does the same automated setup as the batch file.
+
+### First Time Running
+On your first run, you'll be prompted to create an admin account. Enter:
+- **Username:** Any username you like
+- **Email:** Your email address
+- **Password:** A secure password
+- **Role:** Select `ADMIN` for full access
+
+After setup completes, your browser will open to the dashboard at **http://127.0.0.1:8000/**. Log in with the admin credentials you just created.
 
 ---
 
@@ -121,33 +150,71 @@ STOCKFLOW/
    - Dashboard: http://127.0.0.1:8000/
    - Admin panel: http://127.0.0.1:8000/admin/
 
-## Quick Start
+## Quick Start Guide
 
-### First-Time Setup in Django Admin
+### Step 1: Set Up Your Inventory Data
 
-1. Log in to the admin panel at `/admin/`.
-2. Create at least one **Warehouse** with a unique code (e.g., `WH001`).
-3. Create **Categories** (e.g., Electronics, Consumables).
-4. Create **Suppliers** (optional, but helpful for purchase tracking).
-5. Add **Products** linked to categories with SKUs and reorder points.
-6. Populate **Stock Levels** for each product in each warehouse.
+After your first login, go to the **Admin Panel** (`http://127.0.0.1:8000/admin/`) to set up your inventory:
 
-### Dashboard Overview
+1. **Create Warehouses**
+   - Click "Warehouses" → "Add Warehouse"
+   - Enter name (e.g., "Main Warehouse") and code (e.g., "WH001")
+   - Assign a manager (optional)
+   - Click Save
 
-The dashboard displays:
-- Warehouse, product, transfer, and movement counts
-- Low-stock alerts (items at or below reorder point)
-- Recent stock movements with timestamps and performers
-- Pending transfer queue with status
+2. **Create Categories**
+   - Click "Categories" → "Add Category"
+   - Examples: Electronics, Consumables, Raw Materials
 
-### User Roles
+3. **Create Suppliers** (optional but recommended)
+   - Click "Suppliers" → "Add Supplier"
+   - Add contact information for tracking purchases
 
-| Role | Permissions |
-|------|-------------|
-| **Admin** | Full system access, user management, all operations |
-| **Manager** | Approve transfers, view all data, create movements |
-| **Staff** | Create transfers and movements, view inventory |
-| **Viewer** | View-only access to dashboard and data |
+4. **Add Products**
+   - Click "Products" → "Add Product"
+   - Enter SKU (unique identifier), name, category, unit type (pcs, kg, etc.)
+   - Set a reorder point (threshold for low-stock alerts)
+   - Link to a supplier if applicable
+
+5. **Set Stock Levels**
+   - Click "Stock Levels" → "Add Stock Level"
+   - Select product and warehouse
+   - Enter current quantity on hand
+
+### Step 2: Explore the Dashboard
+
+Once you've added data, view the main dashboard (`http://127.0.0.1:8000/`):
+
+**Metrics Section**
+- Total warehouses, products, transfers, and stock movements
+
+**Low Stock Alerts**
+- Products at or below their reorder point
+- Helps you identify what needs reordering
+
+**Recent Movements**
+- Latest stock receipts, issues, and adjustments
+- Shows who performed each movement and when
+
+**Transfer Queue**
+- Pending inter-warehouse transfers
+- Track status: Requested → Approved → In Transit → Received
+
+### Step 3: Record Stock Movements
+
+Click "Transfers" to:
+- **Request a transfer** — Send stock from one warehouse to another
+- **View pending transfers** — Managers can approve or reject
+- **Track completed transfers** — Full audit trail with timestamps
+
+### User Roles & Permissions
+
+| Role | Dashboard | Admin Panel | Create Transfer | Approve Transfer | Create Movement |
+|------|-----------|-------------|-----------------|------------------|------------------|
+| **Admin** | ✓ | ✓ (Full) | ✓ | ✓ | ✓ |
+| **Manager** | ✓ | ✗ | ✓ | ✓ | ✓ |
+| **Staff** | ✓ | ✗ | ✓ | ✗ | ✓ |
+| **Viewer** | ✓ | ✗ | ✗ | ✗ | ✗ |
 
 ## Database Schema
 
@@ -209,27 +276,44 @@ The dashboard displays:
 - `transfer` — Optional link to related StockTransfer
 - `performed_by` — ForeignKey to User
 
-## Development
+## Development & Administration
 
-### Running Tests
+### Managing Users
 
-To set up a test suite, create a `tests.py` file in each app and run:
+**Add a new user:**
 ```bash
-python manage.py test
+python manage.py createsuperuser  # For admin users
 ```
+Or use the Admin Panel → Users → Add User
 
-### Making Database Changes
+### Database Backups
 
-After modifying models:
+Your data is stored in `db.sqlite3`. To backup:
+1. Stop the server (press CTRL+C)
+2. Copy `db.sqlite3` to a safe location
+3. Restart with the launcher
+
+To restore, replace `db.sqlite3` with your backup and restart.
+
+### Making Code Changes
+
+If you modify Django models:
 ```bash
 python manage.py makemigrations
 python manage.py migrate
+python manage.py runserver
 ```
 
-### Creating a Superuser (Admin)
+### Running Tests
 
+To test the system:
 ```bash
-python manage.py createsuperuser
+# Activate virtual environment first
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # macOS/Linux
+
+# Run tests
+python manage.py test
 ```
 
 ## Planned Enhancements

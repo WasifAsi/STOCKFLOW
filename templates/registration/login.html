@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel auth-panel">
+    <div>
+      <p class="eyebrow">Secure access</p>
+      <h2>Sign in to StockFlow</h2>
+      <p class="lead">Use your warehouse account to review stock, transfers, and low inventory alerts.</p>
+    </div>
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Sign in</button>
+    </form>
+  </section>
+{% endblock %}

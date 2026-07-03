@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="hero panel">
+    <div>
+      <p class="eyebrow">Inventory snapshot</p>
+      <h2>Track stock across every warehouse with one offline system.</h2>
+      <p class="lead">Manage products, transfers, movements, and reorder pressure without depending on external services.</p>
+    </div>
+    <div class="hero-metrics">
+      <div><strong>{{ warehouse_count }}</strong><span>Warehouses</span></div>
+      <div><strong>{{ product_count }}</strong><span>Products</span></div>
+      <div><strong>{{ transfer_count }}</strong><span>Transfers</span></div>
+      <div><strong>{{ movement_count }}</strong><span>Movements</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <h3>Low stock alerts</h3>
+      <span>At or below reorder point</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Warehouse</th>
+            <th>Quantity</th>
+            <th>Reorder point</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for level in low_stock_levels %}
+            <tr>
+              <td>{{ level.product.name }}</td>
+              <td>{{ level.warehouse.name }}</td>
+              <td><span class="pill danger">{{ level.quantity }}</span></td>
+              <td>{{ level.product.reorder_point }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4">No low stock items found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="two-column">
+    <article class="panel">
+      <div class="section-head">
+        <h3>Recent movements</h3>
+      </div>
+      <div class="stack-list">
+        {% for movement in recent_movements %}
+          <div class="stack-row">
+            <div>
+              <strong>{{ movement.product.name }}</strong>
+              <p>{{ movement.get_movement_type_display }} at {{ movement.warehouse.name }}</p>
+            </div>
+            <span class="pill">{{ movement.quantity }}</span>
+          </div>
+        {% empty %}
+          <p>No stock movements yet.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="section-head">
+        <h3>Transfer queue</h3>
+      </div>
+      <div class="stack-list">
+        {% for transfer in recent_transfers %}
+          <div class="stack-row">
+            <div>
+              <strong>{{ transfer.reference }}</strong>
+              <p>{{ transfer.product.name }} from {{ transfer.from_warehouse.code }} to {{ transfer.to_warehouse.code }}</p>
+            </div>
+            <span class="pill">{{ transfer.status }}</span>
+          </div>
+        {% empty %}
+          <p>No transfers yet.</p>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+{% endblock %}

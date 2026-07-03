@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Transfers | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>Transfers</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Product</th>
+            <th>Route</th>
+            <th>Quantity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for transfer in transfers %}
+            <tr>
+              <td>{{ transfer.reference }}</td>
+              <td>{{ transfer.product.name }}</td>
+              <td>{{ transfer.from_warehouse.code }} -> {{ transfer.to_warehouse.code }}</td>
+              <td>{{ transfer.quantity }}</td>
+              <td><span class="pill">{{ transfer.status }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">No transfers found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
