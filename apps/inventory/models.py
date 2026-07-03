@@ -55,6 +55,48 @@ class Supplier(TimeStampedModel):
         return self.name
 
 
+class ProductAttributeDefinition(TimeStampedModel):
+    class DataType(models.TextChoices):
+        TEXT = "TEXT", "Text"
+        DECIMAL = "DECIMAL", "Decimal"
+        INTEGER = "INTEGER", "Integer"
+
+    name = models.CharField(max_length=120)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="attribute_definitions",
+        null=True,
+        blank=True,
+    )
+    data_type = models.CharField(max_length=20, choices=DataType.choices, default=DataType.TEXT)
+    allowed_values = models.TextField(blank=True, help_text="Optional comma-separated values for choices.")
+    is_required = models.BooleanField(default=False)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+        unique_together = ("category", "name")
+
+    def __str__(self) -> str:
+        if self.category:
+            return f"{self.category.name}: {self.name}"
+        return self.name
+
+
+class ProductAttributeValue(TimeStampedModel):
+    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="attribute_values")
+    definition = models.ForeignKey(ProductAttributeDefinition, on_delete=models.CASCADE, related_name="values")
+    value = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ("product", "definition")
+        ordering = ["definition__sort_order", "definition__name"]
+
+    def __str__(self) -> str:
+        return f"{self.definition.name}: {self.value}"
+
+
 class Product(TimeStampedModel):
     sku = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=200)
@@ -75,6 +117,10 @@ class Product(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.sku})"
+
+    def attribute_summary(self) -> str:
+        details = [f"{item.definition.name}: {item.value}" for item in self.attribute_values.select_related("definition")]
+        return "; ".join(details)
 
 
 class StockLevel(TimeStampedModel):

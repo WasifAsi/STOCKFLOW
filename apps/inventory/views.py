@@ -29,9 +29,15 @@ def dashboard(request):
 @login_required
 def product_list(request):
     query = request.GET.get("q", "").strip()
-    products = Product.objects.select_related("category", "supplier")
+    products = Product.objects.select_related("category", "supplier").prefetch_related("attribute_values__definition")
     if query:
-        products = products.filter(Q(name__icontains=query) | Q(sku__icontains=query) | Q(category__name__icontains=query))
+        products = products.filter(
+            Q(name__icontains=query)
+            | Q(sku__icontains=query)
+            | Q(category__name__icontains=query)
+            | Q(attribute_values__value__icontains=query)
+            | Q(attribute_values__definition__name__icontains=query)
+        ).distinct()
     return render(request, "inventory/product_list.html", {"products": products, "query": query})
 
 

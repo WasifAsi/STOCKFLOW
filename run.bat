@@ -52,11 +52,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check if superuser exists, if not prompt to create one
-python -c "from django.contrib.auth import get_user_model; User = get_user_model(); exit(0 if User.objects.filter(is_superuser=True).exists() else 1)" 2>nul
+REM Check if an administrator account exists, if not prompt to create one
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); import sys; sys.exit(0 if User.objects.filter(is_superuser=True).exists() or User.objects.filter(role='ADMIN').exists() else 1)" 2>nul
 if errorlevel 1 (
     echo.
-    echo No admin user found. Create one now:
+    echo No administrator account found. Create one now:
     echo.
     python manage.py createsuperuser
 )

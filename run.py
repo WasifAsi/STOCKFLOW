@@ -67,13 +67,19 @@ def main():
     if not run_command(f'"{venv_python}" manage.py migrate --noinput', "Database migrations applied"):
         sys.exit(1)
 
-    # Step 5: Check if superuser exists
+    # Step 5: Check if an administrator account exists
     print("Checking admin user...")
-    check_user_cmd = f'"{venv_python}" -c "from django.contrib.auth import get_user_model; User = get_user_model(); exit(0 if User.objects.filter(is_superuser=True).exists() else 1)"'
-    result = subprocess.run(check_user_cmd, shell=True, capture_output=True)
+    check_user_cmd = [
+        str(venv_python),
+        "manage.py",
+        "shell",
+        "-c",
+        "from django.contrib.auth import get_user_model; User = get_user_model(); import sys; sys.exit(0 if User.objects.filter(is_superuser=True).exists() or User.objects.filter(role='ADMIN').exists() else 1)",
+    ]
+    result = subprocess.run(check_user_cmd, capture_output=True)
     
     if result.returncode != 0:
-        print("\nNo admin user found. Create one now:")
+        print("\nNo administrator account found. Create one now:")
         print("-" * 50)
         subprocess.run(f'"{venv_python}" manage.py createsuperuser', shell=True)
 

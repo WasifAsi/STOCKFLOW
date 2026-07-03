@@ -12,6 +12,7 @@ StockFlow is a self-hosted, self-contained inventory control system designed for
 - **Stock movements** — Log receipts, issues, and adjustments with timestamps and performed-by tracking.
 - **Low-stock alerts** — Dashboard highlights products at or below reorder points.
 - **Product catalog** — Organize products by category, link to suppliers, and set unit types and reorder thresholds.
+- **Custom product attributes** — Define your own product columns during setup, such as brand, model, size, color, audience, or price.
 - **Django admin** — Full administrative interface for data management and user administration.
 - **Offline-first** — Works without internet; all data stored locally.
 
@@ -164,22 +165,30 @@ After your first login, go to the **Admin Panel** (`http://127.0.0.1:8000/admin/
 
 2. **Create Categories**
    - Click "Categories" → "Add Category"
-   - Examples: Electronics, Consumables, Raw Materials
+   - Examples for bicycles: Bike, BMX, Mountain Bike, Tricycle, Parts
 
 3. **Create Suppliers** (optional but recommended)
    - Click "Suppliers" → "Add Supplier"
    - Add contact information for tracking purchases
 
-4. **Add Products**
+4. **Define Product Attributes First**
+   - Click "Product Attribute Definitions" → "Add Product Attribute Definition"
+   - Add the columns you want to use, for example: Brand, Model, Size, Color, Audience, Price
+   - Choose the category if the attribute should apply only to one product group
+   - Set the data type and sort order
+
+5. **Add Products**
    - Click "Products" → "Add Product"
    - Enter SKU (unique identifier), name, category, unit type (pcs, kg, etc.)
+   - Add any product details you created as attributes during setup
    - Set a reorder point (threshold for low-stock alerts)
    - Link to a supplier if applicable
 
-5. **Set Stock Levels**
+6. **Set Stock Levels**
    - Click "Stock Levels" → "Add Stock Level"
    - Select product and warehouse
-   - Enter current quantity on hand
+   - Enter current quantity on hand for each warehouse where the product exists
+   - If the same bike exists in two warehouses, create two stock level rows with different quantities
 
 ### Step 2: Explore the Dashboard
 
