@@ -18,9 +18,12 @@
       <form method="post" class="stack-form">
         {% csrf_token %}
         <p class="muted-note">SKU will be generated automatically from the product details and attributes you enter.</p>
+        <div class="form-section-header">
+          <strong>Category:</strong> <span>{{ selected_category.name }}</span>
+        </div>
         <div class="form-grid">
           {% for field in form %}
-            {% if field.name != 'sku' %}
+            {% if field.name != 'sku' and field.name != 'category' and field.name != 'is_active' %}
             <div class="form-field">
               {{ field.label_tag }}
               {{ field }}
@@ -30,6 +33,9 @@
             {% endif %}
           {% endfor %}
         </div>
+        <!-- Hidden fields for form submission -->
+        {{ form.category }}
+        {{ form.is_active }}
         <button type="submit">Save product</button>
       </form>
     {% endif %}

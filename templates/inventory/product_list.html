@@ -11,8 +11,8 @@
       <table>
         <thead>
           <tr>
-            <th><a href="?q={{ query }}&sort=sku&sort_dir={% if sort_by == 'sku' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">SKU</a></th>
             <th><a href="?q={{ query }}&sort=name&sort_dir={% if sort_by == 'name' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Name</a></th>
+            <th><a href="?q={{ query }}&sort=category&sort_dir={% if sort_by == 'category' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Category</a></th>
             <th><a href="?q={{ query }}&sort=brand&sort_dir={% if sort_by == 'brand' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Brand</a></th>
             <th><a href="?q={{ query }}&sort=model&sort_dir={% if sort_by == 'model' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Model</a></th>
             <th><a href="?q={{ query }}&sort=size&sort_dir={% if sort_by == 'size' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Size</a></th>
@@ -26,8 +26,8 @@
         <tbody>
           {% for product in products %}
             <tr>
-              <td>{{ product.sku }}</td>
               <td><a href="{% url 'inventory:product_detail' product_id=product.id %}">{{ product.name }}</a></td>
+              <td>{{ product.category.name }}</td>
               <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Brand" %}{{ attr.value }}{% endif %}{% endfor %}</td>
               <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Model" %}{{ attr.value }}{% endif %}{% endfor %}</td>
               <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Size" %}{{ attr.value }}{% endif %}{% endfor %}</td>

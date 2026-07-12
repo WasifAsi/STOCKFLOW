@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.shortcuts import redirect, render
 
 from .forms import CategorySelectForm, ProductCreateForm, StockMovementForm
-from .models import Product, StockLevel, StockMovement, StockTransfer, Warehouse
+from .models import Product, StockLevel, StockMovement, StockTransfer, Warehouse, Category
 
 
 @login_required
@@ -188,7 +188,9 @@ def product_list(request):
     order_prefix = "-" if sort_dir == "desc" else ""
     
     # Apply sorting
-    if sort_by == "sku":
+    if sort_by == "category":
+        products = products.order_by(f"{order_prefix}category__name")
+    elif sort_by == "sku":
         products = products.order_by(f"{order_prefix}sku")
     elif sort_by == "stock":
         products = products.order_by(f"{order_prefix}total_stock")
@@ -230,6 +232,7 @@ def product_list(request):
 @login_required
 def product_create(request):
     selected_category_id = request.GET.get("category")
+    selected_category = None
     category_form = CategorySelectForm(request.GET or None)
 
     if request.method == "POST":
@@ -240,6 +243,12 @@ def product_create(request):
             return redirect("inventory:product_detail", product_id=product.id)
     else:
         form = ProductCreateForm(category_id=selected_category_id)
+    
+    if selected_category_id:
+        try:
+            selected_category = Category.objects.get(id=selected_category_id)
+        except Category.DoesNotExist:
+            pass
 
     return render(
         request,
@@ -248,6 +257,7 @@ def product_create(request):
             "category_form": category_form,
             "form": form,
             "show_product_form": bool(selected_category_id),
+            "selected_category": selected_category,
         },
     )
 
@@ -259,6 +269,31 @@ def product_detail(request, product_id):
     )
     stock_levels = product.stock_levels.select_related("warehouse")
     return render(request, "inventory/product_detail.html", {"product": product, "stock_levels": stock_levels})
+
+
+@login_required
+def product_edit(request, product_id):
+    from .forms import ProductEditForm
+    
+    product = Product.objects.select_related("category", "supplier").prefetch_related("attribute_values__definition").get(
+        id=product_id
+    )
+    
+    if request.method == "POST":
+        form = ProductEditForm(request.POST, product=product)
+        if form.is_valid():
+            form.save()
+            return redirect("inventory:product_detail", product_id=product.id)
+    else:
+        form = ProductEditForm(product=product)
+        # Set initial values
+        form.fields["name"].initial = product.name
+        form.fields["supplier"].initial = product.supplier_id
+        form.fields["unit"].initial = product.unit
+        form.fields["price"].initial = product.price
+        form.fields["reorder_point"].initial = product.reorder_point
+    
+    return render(request, "inventory/product_edit.html", {"product": product, "form": form})
 
 
 @login_required

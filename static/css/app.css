@@ -71,6 +71,46 @@ a { color: var(--accent); text-decoration: none; }
   cursor: pointer;
 }
 
+button[type="submit"],
+.pill {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button[type="submit"]:hover,
+.pill:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: var(--line);
+  color: var(--text);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+
+.btn-secondary:hover {
+  opacity: 0.8;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 1.5rem;
+}
+
 .inline-form { margin: 0; }
 
 .content-grid {
@@ -206,6 +246,25 @@ th { color: var(--muted); font-weight: 600; font-size: 0.92rem; }
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.form-section-header {
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-left: 4px solid #0066cc;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.form-section-header strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.form-section-header span {
+  color: #0066cc;
+  font-weight: 500;
+  margin-left: 0.5rem;
 }
 
 .form-field {

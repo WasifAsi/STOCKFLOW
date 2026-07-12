@@ -24,9 +24,9 @@ class ProductCreateForm(forms.Form):
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, empty_label="No supplier")
     unit = forms.CharField(max_length=32, initial="pcs")
-    price = forms.DecimalField(max_digits=12, decimal_places=2, required=False)
-    reorder_point = forms.IntegerField(min_value=0, initial=0)
-    is_active = forms.BooleanField(required=False, initial=True)
+    price = forms.DecimalField(max_digits=12, decimal_places=2, required=False, min_value=0)
+    reorder_point = forms.IntegerField(min_value=0, initial=0, help_text="Minimum stock level. Alerts when inventory falls below this point.")
+    is_active = forms.BooleanField(required=False, initial=True, widget=forms.HiddenInput())
 
     def __init__(self, *args, category_id=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,6 +46,8 @@ class ProductCreateForm(forms.Form):
             )
 
         self.attribute_definitions = list(attribute_definitions)
+        # Filter out Price attribute since we have a dedicated price field
+        self.attribute_definitions = [d for d in self.attribute_definitions if d.name.lower() != "price"]
 
         for definition in self.attribute_definitions:
             field_name = f"attribute_{definition.id}"
@@ -134,6 +136,76 @@ class ProductCreateForm(forms.Form):
             product.attribute_values.create(definition=definition, value=str(value))
 
         return product
+
+
+class ProductEditForm(forms.Form):
+    """Form to edit an existing product's basic details"""
+    name = forms.CharField(max_length=200)
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, empty_label="No supplier")
+    unit = forms.CharField(max_length=32)
+    price = forms.DecimalField(max_digits=12, decimal_places=2, required=False, min_value=0)
+    reorder_point = forms.IntegerField(min_value=0)
+
+    def __init__(self, *args, product=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.product = product
+        
+        if product:
+            # Load attribute fields from the product's category
+            attribute_definitions = ProductAttributeDefinition.objects.filter(
+                Q(category__isnull=True) | Q(category_id=product.category_id)
+            ).order_by("sort_order", "name")
+            # Filter out Price attribute
+            self.attribute_definitions = [d for d in attribute_definitions if d.name.lower() != "price"]
+            
+            for definition in self.attribute_definitions:
+                field_name = f"attribute_{definition.id}"
+                choices = [value.strip() for value in definition.allowed_values.split(",") if value.strip()]
+
+                if choices:
+                    self.fields[field_name] = forms.ChoiceField(
+                        label=definition.name,
+                        choices=[("", "Select an option")] + [(choice, choice) for choice in choices],
+                        required=definition.is_required,
+                    )
+                elif definition.data_type == definition.DataType.INTEGER:
+                    self.fields[field_name] = forms.IntegerField(label=definition.name, required=definition.is_required)
+                elif definition.data_type == definition.DataType.DECIMAL:
+                    self.fields[field_name] = forms.DecimalField(
+                        label=definition.name,
+                        required=definition.is_required,
+                        max_digits=12,
+                        decimal_places=2,
+                    )
+                else:
+                    self.fields[field_name] = forms.CharField(label=definition.name, required=definition.is_required)
+                
+                # Set initial value for the attribute if it exists
+                existing_attr = product.attribute_values.filter(definition=definition).first()
+                if existing_attr:
+                    self.fields[field_name].initial = existing_attr.value
+    
+    def save(self):
+        """Update product and its attributes"""
+        self.product.name = self.cleaned_data["name"]
+        self.product.supplier = self.cleaned_data.get("supplier")
+        self.product.unit = self.cleaned_data["unit"]
+        self.product.price = self.cleaned_data.get("price")
+        self.product.reorder_point = self.cleaned_data["reorder_point"]
+        self.product.save()
+        
+        # Update attribute values
+        for definition in self.attribute_definitions:
+            value = self.cleaned_data.get(f"attribute_{definition.id}")
+            if value in (None, ""):
+                self.product.attribute_values.filter(definition=definition).delete()
+            else:
+                self.product.attribute_values.update_or_create(
+                    definition=definition,
+                    defaults={"value": str(value)}
+                )
+        
+        return self.product
 
 
 class StockLevelForm(forms.Form):

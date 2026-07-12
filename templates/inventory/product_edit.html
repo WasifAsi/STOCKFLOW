@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Product | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>Edit Product</h3>
+    </div>
+
+    <form method="post" class="stack-form">
+      {% csrf_token %}
+      <p class="muted-note">Update product details and pricing information.</p>
+      
+      <div class="form-section-header">
+        <strong>SKU:</strong> <span>{{ product.sku }}</span>
+      </div>
+      
+      <div class="form-section-header">
+        <strong>Category:</strong> <span>{{ product.category.name }}</span>
+      </div>
+
+      <div class="form-grid">
+        {% for field in form %}
+          <div class="form-field">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'inventory:product_detail' product_id=product.id %}" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}
