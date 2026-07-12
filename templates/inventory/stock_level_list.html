@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Levels | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>Stock Updates</h3>
+      <span>Receive new stock, record sales, or move stock between warehouses</span>
+    </div>
+
+    <form method="get" class="search-bar compact">
+      <input type="search" name="q" value="{{ search_query }}" placeholder="Search product by name, SKU, category, or attribute">
+      <button type="submit">Filter products</button>
+    </form>
+
+    <form method="post" class="stack-form" id="stock-movement-form">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="movement">
+
+      {% if movement_form.non_field_errors %}
+        {% for error in movement_form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      {% endif %}
+
+      <div class="form-grid">
+        <div class="form-field">
+          {{ movement_form.action.label_tag }}
+          {{ movement_form.action }}
+          {% if movement_form.action.help_text %}<small>{{ movement_form.action.help_text }}</small>{% endif %}
+          {% for error in movement_form.action.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ movement_form.product.label_tag }}
+          {{ movement_form.product }}
+          {% if movement_form.product.help_text %}<small>{{ movement_form.product.help_text }}</small>{% endif %}
+          {% for error in movement_form.product.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ movement_form.warehouse.label_tag }}
+          {{ movement_form.warehouse }}
+          {% if movement_form.warehouse.help_text %}<small>{{ movement_form.warehouse.help_text }}</small>{% endif %}
+          {% for error in movement_form.warehouse.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field" id="destination-warehouse-field">
+          {{ movement_form.to_warehouse.label_tag }}
+          {{ movement_form.to_warehouse }}
+          {% if movement_form.to_warehouse.help_text %}<small>{{ movement_form.to_warehouse.help_text }}</small>{% endif %}
+          {% for error in movement_form.to_warehouse.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ movement_form.quantity.label_tag }}
+          {{ movement_form.quantity }}
+          {% if movement_form.quantity.help_text %}<small>{{ movement_form.quantity.help_text }}</small>{% endif %}
+          {% for error in movement_form.quantity.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field">
+          {{ movement_form.reference.label_tag }}
+          {{ movement_form.reference }}
+          {% if movement_form.reference.help_text %}<small>{{ movement_form.reference.help_text }}</small>{% endif %}
+          {% for error in movement_form.reference.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-field span-2">
+          {{ movement_form.notes.label_tag }}
+          {{ movement_form.notes }}
+          {% if movement_form.notes.help_text %}<small>{{ movement_form.notes.help_text }}</small>{% endif %}
+          {% for error in movement_form.notes.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <button type="submit">Save stock update</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <h3>Current Stock</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Warehouse</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Reserved</th>
+            <th>Available</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stock in stock_levels %}
+            <tr>
+              <td>{{ stock.warehouse.name }}</td>
+              <td>{{ stock.product.name }}</td>
+              <td>{{ stock.quantity }}</td>
+              <td>{{ stock.reserved_quantity }}</td>
+              <td>{{ stock.available_quantity }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">No stock levels yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const form = document.getElementById('stock-movement-form');
+      if (!form) return;
+
+      const actionField = form.querySelector('[name="action"]');
+      const destinationField = document.getElementById('destination-warehouse-field');
+
+      function toggleDestinationField() {
+        if (!actionField || !destinationField) return;
+        destinationField.style.display = actionField.value === 'TRANSFER' ? '' : 'none';
+      }
+
+      toggleDestinationField();
+      if (actionField) {
+        actionField.addEventListener('change', toggleDestinationField);
+      }
+    })();
+  </script>
+{% endblock %}

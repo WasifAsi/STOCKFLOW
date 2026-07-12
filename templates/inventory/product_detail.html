@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>{{ product.name }}</h3>
+      <a class="pill" href="{% url 'inventory:product_create' %}">Add another product</a>
+    </div>
+
+    <p><strong>SKU:</strong> {{ product.sku }}</p>
+    <p><strong>Category:</strong> {{ product.category.name }}</p>
+    <p><strong>Supplier:</strong> {{ product.supplier.name|default:"-" }}</p>
+    <p><strong>Unit:</strong> {{ product.unit }}</p>
+    <p><strong>Reorder point:</strong> {{ product.reorder_point }}</p>
+
+    <h4>Attributes</h4>
+    <div class="stack-list">
+      {% for attribute in product.attribute_values.all %}
+        <div class="stack-row"><strong>{{ attribute.definition.name }}:</strong><span>{{ attribute.value }}</span></div>
+      {% empty %}
+        <div class="stack-row"><span>No attributes added.</span></div>
+      {% endfor %}
+    </div>
+
+    <h4>Stock by warehouse</h4>
+    <div class="stack-list">
+      {% for stock in stock_levels %}
+        <div class="stack-row"><strong>{{ stock.warehouse.name }}</strong><span>{{ stock.quantity }}</span></div>
+      {% empty %}
+        <div class="stack-row"><span>No stock levels added.</span></div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

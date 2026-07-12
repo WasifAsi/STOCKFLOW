@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product | StockFlow{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-head">
+      <h3>Add Product</h3>
+    </div>
+
+    {% if not show_product_form %}
+      <form method="get" class="stack-form">
+        {{ category_form.as_p }}
+        <button type="submit">Load product fields</button>
+      </form>
+      <p class="muted-note">Choose a category first so StockFlow can show the admin-defined attributes and dropdown values.</p>
+    {% else %}
+      <form method="post" class="stack-form">
+        {% csrf_token %}
+        <p class="muted-note">SKU will be generated automatically from the product details and attributes you enter.</p>
+        <div class="form-grid">
+          {% for field in form %}
+            {% if field.name != 'sku' %}
+            <div class="form-field">
+              {{ field.label_tag }}
+              {{ field }}
+              {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+              {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <button type="submit">Save product</button>
+      </form>
+    {% endif %}
+  </section>
+{% endblock %}

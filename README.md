@@ -177,12 +177,13 @@ After your first login, go to the **Admin Panel** (`http://127.0.0.1:8000/admin/
    - Choose the category if the attribute should apply only to one product group
    - Set the data type and sort order
 
-5. **Add Products**
-   - Click "Products" → "Add Product"
-   - Enter SKU (unique identifier), name, category, unit type (pcs, kg, etc.)
-   - Add any product details you created as attributes during setup
-   - Set a reorder point (threshold for low-stock alerts)
-   - Link to a supplier if applicable
+5. **Add Products in the Normal Panel**
+   - Open **Add Product** from the top menu in StockFlow
+   - Choose a category first
+   - StockFlow will load the admin-defined attribute fields for that category
+   - Dropdowns appear for attributes where the admin provided allowed values
+   - Type manual values for attributes that do not have dropdown options
+   - Save the product
 
 6. **Set Stock Levels**
    - Click "Stock Levels" → "Add Stock Level"

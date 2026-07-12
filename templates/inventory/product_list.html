@@ -6,10 +6,13 @@
   <section class="panel">
     <div class="section-head">
       <h3>Products</h3>
-      <form method="get" class="search-bar">
-        <input type="search" name="q" value="{{ query }}" placeholder="Search SKU, name, category, or attribute values">
-        <button type="submit">Search</button>
-      </form>
+      <div class="section-actions">
+        <a class="pill" href="{% url 'inventory:product_create' %}">Add Product</a>
+        <form method="get" class="search-bar">
+          <input type="search" name="q" value="{{ query }}" placeholder="Search SKU, name, category, or attribute values">
+          <button type="submit">Search</button>
+        </form>
+      </div>
     </div>
     <div class="table-wrap">
       <table>

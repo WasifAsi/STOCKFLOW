@@ -16,7 +16,10 @@
       </div>
       <nav class="nav-links">
         <a href="{% url 'inventory:dashboard' %}">Dashboard</a>
+        <a href="{% url 'inventory:reports' %}">Reports</a>
         <a href="{% url 'inventory:product_list' %}">Products</a>
+        <a href="{% url 'inventory:product_create' %}">Add Product</a>
+        <a href="{% url 'inventory:stock_level_list' %}">Stock Levels</a>
         <a href="{% url 'inventory:warehouse_list' %}">Warehouses</a>
         <a href="{% url 'inventory:transfer_list' %}">Transfers</a>
         {% if user.is_authenticated %}

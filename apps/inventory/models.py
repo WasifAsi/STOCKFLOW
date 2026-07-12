@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+import hashlib
+from django.utils.text import slugify
 
 
 class TimeStampedModel(models.Model):
@@ -117,6 +119,37 @@ class Product(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.sku})"
+
+    @staticmethod
+    def generate_sku(name, category, supplier=None, attributes=None) -> str:
+        parts = [name, category.name if category else ""]
+        if supplier:
+            parts.append(supplier.name)
+
+        if attributes:
+            for key in sorted(attributes):
+                parts.append(f"{key}-{attributes[key]}")
+
+        normalized_parts = [slugify(str(part)) for part in parts if slugify(str(part))]
+        base = "-".join(normalized_parts) or "item"
+        digest_source = "|".join(normalized_parts) or base
+        digest = hashlib.sha1(digest_source.encode("utf-8")).hexdigest()[:8].upper()
+        prefix = base[:55].rstrip("-") or "item"
+        return f"{prefix}-{digest}"[:64]
+
+    def identity_key(self) -> str:
+        attribute_pairs = [
+            f"{item.definition.name.strip().lower()}={item.value.strip().lower()}"
+            for item in self.attribute_values.select_related("definition")
+            if item.value.strip()
+        ]
+        parts = [
+            self.name.strip().lower(),
+            self.category.name.strip().lower() if self.category else "",
+            self.supplier.name.strip().lower() if self.supplier else "",
+            *sorted(attribute_pairs),
+        ]
+        return "|".join(part for part in parts if part)
 
     def attribute_summary(self) -> str:
         details = [f"{item.definition.name}: {item.value}" for item in self.attribute_values.select_related("definition")]
