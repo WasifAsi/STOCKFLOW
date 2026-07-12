@@ -6,40 +6,39 @@
   <section class="panel">
     <div class="section-head">
       <h3>Products</h3>
-      <div class="section-actions">
-        <a class="pill" href="{% url 'inventory:product_create' %}">Add Product</a>
-        <form method="get" class="search-bar">
-          <input type="search" name="q" value="{{ query }}" placeholder="Search SKU, name, category, or attribute values">
-          <button type="submit">Search</button>
-        </form>
-      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>SKU</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Supplier</th>
-            <th>Unit</th>
-            <th>Reorder point</th>
-            <th>Details</th>
+            <th><a href="?q={{ query }}&sort=sku&sort_dir={% if sort_by == 'sku' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">SKU</a></th>
+            <th><a href="?q={{ query }}&sort=name&sort_dir={% if sort_by == 'name' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Name</a></th>
+            <th><a href="?q={{ query }}&sort=brand&sort_dir={% if sort_by == 'brand' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Brand</a></th>
+            <th><a href="?q={{ query }}&sort=model&sort_dir={% if sort_by == 'model' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Model</a></th>
+            <th><a href="?q={{ query }}&sort=size&sort_dir={% if sort_by == 'size' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Size</a></th>
+            <th><a href="?q={{ query }}&sort=color&sort_dir={% if sort_by == 'color' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Color</a></th>
+            <th><a href="?q={{ query }}&sort=audience&sort_dir={% if sort_by == 'audience' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Audience</a></th>
+            <th><a href="?q={{ query }}&sort=price&sort_dir={% if sort_by == 'price' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Price</a></th>
+            <th><a href="?q={{ query }}&sort=stock&sort_dir={% if sort_by == 'stock' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Stocks</a></th>
+            <th><a href="?q={{ query }}&sort=updated_at&sort_dir={% if sort_by == 'updated_at' and sort_dir == 'asc' %}desc{% else %}asc{% endif %}">Last Updated</a></th>
           </tr>
         </thead>
         <tbody>
           {% for product in products %}
             <tr>
               <td>{{ product.sku }}</td>
-              <td>{{ product.name }}</td>
-              <td>{{ product.category.name }}</td>
-              <td>{{ product.supplier.name|default:"-" }}</td>
-              <td>{{ product.unit }}</td>
-              <td>{{ product.reorder_point }}</td>
-              <td>{{ product.attribute_summary|default:"-" }}</td>
+              <td><a href="{% url 'inventory:product_detail' product_id=product.id %}">{{ product.name }}</a></td>
+              <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Brand" %}{{ attr.value }}{% endif %}{% endfor %}</td>
+              <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Model" %}{{ attr.value }}{% endif %}{% endfor %}</td>
+              <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Size" %}{{ attr.value }}{% endif %}{% endfor %}</td>
+              <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Color" %}{{ attr.value }}{% endif %}{% endfor %}</td>
+              <td>{% for attr in product.attribute_values.all %}{% if attr.definition.name == "Audience" %}{{ attr.value }}{% endif %}{% endfor %}</td>
+              <td>{{ product.price|default:"-" }}</td>
+              <td>{{ product.total_stock|default:"0" }}</td>
+              <td>{{ product.updated_at|date:"Y-m-d H:i" }}</td>
             </tr>
           {% empty %}
-            <tr><td colspan="7">No products found.</td></tr>
+            <tr><td colspan="10">No products found.</td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -24,6 +24,7 @@ class ProductCreateForm(forms.Form):
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False, empty_label="No supplier")
     unit = forms.CharField(max_length=32, initial="pcs")
+    price = forms.DecimalField(max_digits=12, decimal_places=2, required=False)
     reorder_point = forms.IntegerField(min_value=0, initial=0)
     is_active = forms.BooleanField(required=False, initial=True)
 
@@ -121,6 +122,7 @@ class ProductCreateForm(forms.Form):
             category=self.cleaned_data["category"],
             supplier=self.cleaned_data.get("supplier"),
             unit=self.cleaned_data["unit"],
+            price=self.cleaned_data.get("price"),
             reorder_point=self.cleaned_data["reorder_point"],
             is_active=self.cleaned_data.get("is_active", True),
         )

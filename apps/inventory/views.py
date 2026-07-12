@@ -1,8 +1,8 @@
 import csv
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import F, Q
-from django.db.models import Count, Sum
+from django.db.models import F, Q, Case, When, Count, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils import timezone
 from django.shortcuts import redirect, render
@@ -168,7 +168,13 @@ def reports(request):
 @login_required
 def product_list(request):
     query = request.GET.get("q", "").strip()
-    products = Product.objects.select_related("category", "supplier").prefetch_related("attribute_values__definition")
+    sort_by = request.GET.get("sort", "name")
+    sort_dir = request.GET.get("sort_dir", "asc")
+    
+    products = Product.objects.select_related("category", "supplier").prefetch_related("attribute_values__definition").annotate(
+        total_stock=Coalesce(Sum("stock_levels__quantity"), 0)
+    )
+    
     if query:
         products = products.filter(
             Q(name__icontains=query)
@@ -177,7 +183,48 @@ def product_list(request):
             | Q(attribute_values__value__icontains=query)
             | Q(attribute_values__definition__name__icontains=query)
         ).distinct()
-    return render(request, "inventory/product_list.html", {"products": products, "query": query})
+    
+    # Determine sort order prefix
+    order_prefix = "-" if sort_dir == "desc" else ""
+    
+    # Apply sorting
+    if sort_by == "sku":
+        products = products.order_by(f"{order_prefix}sku")
+    elif sort_by == "stock":
+        products = products.order_by(f"{order_prefix}total_stock")
+    elif sort_by == "updated_at":
+        products = products.order_by(f"{order_prefix}updated_at")
+    elif sort_by == "price":
+        products = products.order_by(f"{order_prefix}price")
+    elif sort_by in ["brand", "model", "size", "color", "audience"]:
+        # For attribute sorting, fetch all and sort in Python, then use Case/When to preserve order
+        products_list = list(products)
+        attr_name = sort_by.capitalize()
+        reverse = sort_dir == "desc"
+        products_list.sort(
+            key=lambda p: next(
+                (av.value for av in p.attribute_values.all() if av.definition.name == attr_name),
+                ""
+            ),
+            reverse=reverse
+        )
+        # Preserve sort order using Case/When
+        if products_list:
+            id_order = [p.id for p in products_list]
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(id_order)])
+            products = Product.objects.filter(id__in=id_order).annotate(
+                preserved_order=preserved,
+                total_stock=Coalesce(Sum("stock_levels__quantity"), 0)
+            ).select_related("category", "supplier").prefetch_related("attribute_values__definition").order_by("preserved_order")
+    else:
+        products = products.order_by(f"{order_prefix}name")
+    
+    return render(request, "inventory/product_list.html", {
+        "products": products,
+        "query": query,
+        "sort_by": sort_by,
+        "sort_dir": sort_dir,
+    })
 
 
 @login_required
@@ -256,12 +303,6 @@ def stock_level_list(request):
             "search_query": search_query,
         },
     )
-
-
-@login_required
-def warehouse_list(request):
-    warehouses = Warehouse.objects.select_related("manager")
-    return render(request, "inventory/warehouse_list.html", {"warehouses": warehouses})
 
 
 @login_required

@@ -111,6 +111,7 @@ class Product(TimeStampedModel):
         related_name="products",
     )
     unit = models.CharField(max_length=32, default="pcs")
+    price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     reorder_point = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 

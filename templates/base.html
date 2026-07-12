@@ -20,7 +20,6 @@
         <a href="{% url 'inventory:product_list' %}">Products</a>
         <a href="{% url 'inventory:product_create' %}">Add Product</a>
         <a href="{% url 'inventory:stock_level_list' %}">Stock Levels</a>
-        <a href="{% url 'inventory:warehouse_list' %}">Warehouses</a>
         <a href="{% url 'inventory:transfer_list' %}">Transfers</a>
         {% if user.is_authenticated %}
           <form method="post" action="{% url 'logout' %}" class="inline-form">

@@ -13,7 +13,9 @@
     <p><strong>Category:</strong> {{ product.category.name }}</p>
     <p><strong>Supplier:</strong> {{ product.supplier.name|default:"-" }}</p>
     <p><strong>Unit:</strong> {{ product.unit }}</p>
+    <p><strong>Price:</strong> {{ product.price|default:"-" }}</p>
     <p><strong>Reorder point:</strong> {{ product.reorder_point }}</p>
+    <p><strong>Last Updated:</strong> {{ product.updated_at|date:"Y-m-d H:i" }}</p>
 
     <h4>Attributes</h4>
     <div class="stack-list">
